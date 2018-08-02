@@ -141,12 +141,11 @@ public class CertMatrimonio {
     public void menuMat(Persona p,String r){
         String c=("2");
         Cert certi = new Cert(c,p.getRut(),p.getComuna(),r);
-        ArrayList<Cert> ac=new ArrayList<>();
-        ListCertEmitidos lc=new ListCertEmitidos(ac);
-        ac=lc.chequeoCert(p);
-        ac.add(certi);
-        lc.setListaCertificados(ac);
-        p.setCert(lc);
+        ListaCertSolicitados ls=ListaCertSolicitados.getInstance();
+        ArrayList<Cert> as=ls.getListaCertSolicitados();
+        as.add(certi);
+        ls.setListaCertSolicitados(as);
+        ls.Actualizar(ls);
     }
     
 }

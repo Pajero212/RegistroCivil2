@@ -7,8 +7,12 @@ import java.io.FileOutputStream;
 import javax.swing.JFileChooser;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.Element;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.pdf.PdfWriter;
+import com.itextpdf.text.Image;
+import intervisual.excepcionInterfaz;
+import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
@@ -28,6 +32,12 @@ public class main2 extends javax.swing.JFrame {
     
     public StringSubida getString(){
         return s;
+    }
+    
+    public void validarTexto() throws excepcionInterfaz{
+        if(txtruta==null){
+            throw new excepcionInterfaz("Campo de Texto Vacio");
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -92,22 +102,31 @@ public class main2 extends javax.swing.JFrame {
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        String ruta=txtruta.getText();
-        String contenido=s.getStringSubida();
-        try{
-            FileOutputStream archivo = new FileOutputStream(ruta+".pdf");
-            Document document = new Document ();
-            PdfWriter.getInstance(document, archivo);
-            document.open();
-            document.add(new Paragraph(contenido));
-            document.close();
-            JOptionPane.showMessageDialog(null, "pdf Correctamente creado");
-        }catch(FileNotFoundException e){
-            
-        } catch (DocumentException ex) {
-            Logger.getLogger(main2.class.getName()).log(Level.SEVERE, null, ex);
+        try {
+            validarTexto();
+            String ruta=txtruta.getText();
+            String contenido=s.getStringSubida();
+            try{
+                FileOutputStream archivo = new FileOutputStream(ruta+".pdf");
+                Document document = new Document ();
+                PdfWriter.getInstance(document, archivo);
+                document.open();
+                Image imagen = Image.getInstance("escudoChile.png");
+                imagen.scaleAbsolute(100, 100);
+                imagen.setAlignment(Element.ALIGN_CENTER);
+                document.add(imagen);
+                document.add(new Paragraph(contenido));
+                document.close();
+                JOptionPane.showMessageDialog(null, "pdf Correctamente creado");
+            }catch(FileNotFoundException e){
+
+            }catch (DocumentException | IOException ex) {
+                Logger.getLogger(main2.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }catch (excepcionInterfaz ex) {
+            System.out.println("Eror: "+ex.getMessage());
         }
-        
+        this.setVisible(false);
                
     }//GEN-LAST:event_jButton2ActionPerformed
 

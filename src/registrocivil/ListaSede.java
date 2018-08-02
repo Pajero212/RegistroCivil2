@@ -1,12 +1,10 @@
 package registrocivil;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
@@ -15,10 +13,24 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 public class ListaSede implements excel{
     private ArrayList <Sede> sedes;
+    private static ListaSede ls;
     
-    public ListaSede (){
+    public static ListaSede getInstance(){
+        if(ls==null){
+            File f=new File("sedes.xlsx");
+            List lista = excel.LeerExcel(f);
+            ls=(ListaSede)ListaSede.obtenerExcel(lista);
+        }
+        return ls;
+    }
+    
+    private ListaSede (){
         ArrayList<Sede> sede = new ArrayList <>();
         this.sedes=sede;
+    }
+
+    private ListaSede(ArrayList<Sede> s) {
+        sedes=s;
     }
     
     public void setSedes(ArrayList sedes){
@@ -29,26 +41,37 @@ public class ListaSede implements excel{
             return sedes;
     }
     
-    public Sede selectSede(ArrayList a,String c){
+    public Sede selectSede(String c){
         int i;
-        for(i=0;i<a.size();i++){
-            Sede s = (Sede)a.get(i);
+        for(i=0;i<sedes.size();i++){
+            Sede s = (Sede)sedes.get(i);
             if(s.getComuna().equals(c)) return s;
         }
         return null;
     }
     
-    public ArrayList agruparOficinar(ArrayList todo,String region){
+    public void eliminarSede(Sede s){
+        for(int i=0;i<sedes.size();i++){
+            Sede ss = (Sede)sedes.get(i);
+            if(ss.getComuna().equals(s.getComuna())){
+                ss.eliminarCert();
+                sedes.remove(i);
+            }
+        }
+        File f=new File("sedes.xlsx");
+        this.ActualizarExcel(this, f);
+    }
+    
+    public ArrayList agruparOficinar(String region){
         ArrayList<Sede> ss=new ArrayList<>();
         int i;
-        for(i=0;i<todo.size();i++){
-            Sede s=(Sede)todo.get(i);
+        for(i=0;i<sedes.size();i++){
+            Sede s=(Sede)sedes.get(i);
             if(s.getRegion().equals(region)) ss.add(s);
         }
         return ss;
     }
-    
-    @Override
+
     public void ActualizarExcel(Object O, File file) {
         int i,j;
         ListaSede s=(ListaSede)O;
@@ -77,88 +100,25 @@ public class ListaSede implements excel{
                     wb.write(fsIP);
                 }
             }catch(FileNotFoundException ex){
-                
+                System.out.println("\nError: "+ex.getMessage());
             }
         }catch(IOException e){
-            
+            System.out.println("\nError: "+e.getMessage());
         }
     }
 
-    @Override
-    public Object LeerExcel(Object O, File filename) {
-       List cellData = new ArrayList();
-        try{
-            FileInputStream fileInputStream = new FileInputStream (filename);
-            XSSFWorkbook workbook = new XSSFWorkbook(fileInputStream);
-            
-            XSSFSheet hssfsheet = workbook.getSheetAt(0);
-            
-            Iterator rowIterator = hssfsheet.rowIterator();
-            
-            while(rowIterator.hasNext()){
-                XSSFRow hssfRow = (XSSFRow) rowIterator.next();
-                
-                Iterator iterator = hssfRow.cellIterator();
-                List cellTemp = new ArrayList();
-                
-                while(iterator.hasNext()){
-                    XSSFCell hssfCell = (XSSFCell) iterator.next();
-                    
-                    cellTemp.add(hssfCell);
-                }
-                
-                cellData.add(cellTemp);
-            }
-            
-        }catch(IOException e){
-           
-        }
-        return obtenerExcel(cellData,O);
-    }
-
-    @Override
-    public Object obtenerExcel(List cellDataList, Object O) {
+    public static Object obtenerExcel(List cellDataList) {
         ArrayList<Sede> s = new ArrayList <>();
-        ArrayList<Persona> personas = new ArrayList <>();
-        ArrayList<Cert> certificados = new ArrayList <>();
-        ListaSede ls = (ListaSede)O;
-        ListCertEmitidos lc=new ListCertEmitidos(certificados);
-        ListaPersonas lp=new ListaPersonas(personas);
-        int i,j;
-        String region=null,comuna=null;
-        lp=(ListaPersonas)lp.cargarExcel();
-        lc=(ListCertEmitidos)lc.cargarExcel();
-        personas=lp.getPersonas();
-        certificados=lc.getListaCertificados();
+        ListaPersonas lp = ListaPersonas.getInstance();
+        ListCertEmitidos lc = ListCertEmitidos.getInstance();
+        int i;
         for (i=0;i<cellDataList.size();i++){
             List cellTempList = (List) cellDataList.get(i);
-            
-            for(j=0;j<cellTempList.size();j++){
-                XSSFCell hssfCell = (XSSFCell) cellTempList.get(j);
-                
-                String stringCellValue = hssfCell.toString();
-                switch(j){
-                    case 0:
-                        region=stringCellValue;
-                        break;
-                    case 1:
-                        comuna=stringCellValue;
-                        break;
-                }
-            }
-            Sede sede=new Sede(region,comuna,lp.agruparPersonas(personas, comuna),lc.agruparCertSede(comuna,certificados));
+            Sede sede=new Sede(cellTempList,lp,lc);
             s.add(sede);
         }
-        ls.setSedes(s);
-        return ls;
-    }
-
-    @Override
-    public Object cargarExcel(){
-        ListaSede l=new ListaSede();
-        File f=new File("sedes.xlsx");
-        LeerExcel(l,f);
-        return l;
+        ListaSede list = new ListaSede(s);
+        return list;
     }
     
 }

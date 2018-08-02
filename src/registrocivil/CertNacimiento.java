@@ -14,12 +14,14 @@ public class CertNacimiento {
         this.nombreH=nombreH;
         this.apellidoPH=apellidoPH;
         this.apellidoMH=apellidoMH;
+        this.rutH=rutH;
         this.nombreM=nombreM;
         this.apellidoPM=apellidoPM;
         this.apellidoMM=apellidoMM;
+        this.rutM=rutM;
         this.date=null;
         this.nombreG=nombreG;
-        this.rutG=null;
+        this.rutG=this.generarRut();
         this.apellidoPG=apellidoPH;
         this.apellidoMG=apellidoPM;
     }
@@ -37,6 +39,21 @@ public class CertNacimiento {
         this.rutG=null;
         this.apellidoPG=null;
         this.apellidoMG=null;
+    }
+    
+    public CertNacimiento(Persona p,Persona p2,String nombre,String rut){
+        this.cod=1;
+        this.nombreH=p.getNombre();
+        this.apellidoPH=p.getApellidoP();
+        this.apellidoMH=p.getApellidoM();
+        this.nombreM=p2.getNombre();
+        this.apellidoPM=p2.getApellidoP();
+        this.apellidoMM=p2.getApellidoM();
+        this.date=null;
+        this.nombreG=nombre;
+        this.rutG=rut;
+        this.apellidoPG=p.getApellidoP();
+        this.apellidoMG=p2.getApellidoP();
     }
     
     
@@ -157,12 +174,61 @@ public class CertNacimiento {
     public void menuNac(Persona p,String r){
         String c=("1");
         Cert certi = new Cert(c,p.getRut(),p.getComuna(),r);
-        ListaCertSolicitados ls=new ListaCertSolicitados();
-        ls=(ListaCertSolicitados)ls.cargarExcel();
+        ListaCertSolicitados ls=ListaCertSolicitados.getInstance();
         ArrayList<Cert> as=ls.getListaCertSolicitados();
         as.add(certi);
         ls.setListaCertSolicitados(as);
         ls.Actualizar(ls);
     }
+    
+    public void certAprobado(String nombre, String apellidoP,String apellidoM,String sexo,String comuna){
+        Fecha f = new Fecha();
+        f=f.fechaHoy();
+        Persona p= new Persona(nombre,this.generarRut(),apellidoP,"Soltero",apellidoM,sexo, "Chilena",this.generarRut(),f,comuna,"1",true) {};
+        ListaPersonas lp = ListaPersonas.getInstance();
+        lp.actualizable(p);
+    }
+    
+    private String generarRut(){
+        int n,up,down;
+        String rut;
+        Fecha f=new Fecha();
+        f=f.fechaHoy();
+        String num=f.getAgno();
+        n=Integer.parseInt(num);
+        do{
+            n++;
+        }while(n!=2018);
+        up=(n/100);
+        down=(n%100);
+        
+        if(up>down){
+        n=up-down;
+        n=n+up;
+        }else{
+        n=down-up;
+        n=n+up;
+        }
+        rut= Integer.toString(n);
+        int na=(int)(Math.random()*9)+1;
+        rut=rut+"."+Integer.toString(na);
+        num=f.getMes();
+        n=Integer.parseInt(num);
+        if((n/10)<=0){
+            n=n*na;
+        }
+        na=(int)(Math.random()*9)+1;
+        rut=rut+Integer.toString(n)+"."+Integer.toString(na);
+        num=f.getDia();
+        n=Integer.parseInt(num);
+        if((n/10)<=0){
+            n=n*na;
+        }
+        na=(int)(Math.random()*9)+1;
+        rut=rut+Integer.toString(n)+"-"+Integer.toString(na);
+        return rut;
+    }
+    
+    
     
 }

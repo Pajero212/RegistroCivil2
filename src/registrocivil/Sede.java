@@ -1,6 +1,9 @@
 package registrocivil;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
+import org.apache.poi.xssf.usermodel.XSSFCell;
 
 public class Sede{
         private String nombreComuna;
@@ -13,6 +16,13 @@ public class Sede{
                 this.listCert = cert;
 		this.nombreComuna=nombreComuna;
                 this.personas=personas;
+	}
+        
+        public Sede() {
+		this.region=null;
+                this.listCert = null;
+		this.nombreComuna=null;
+                this.personas=null;
 	}
         
         public void setPersonas(ListaPersonas personas){
@@ -46,44 +56,31 @@ public class Sede{
         public ListaPersonas getPersonas(){
             return personas;
         }
-        /**
-         * A PARTIR DEL RUT Y LA CONTRASEÑA, EL USUARIO
-         * INGRESA LOS DATOS PARA PODER INGRESAR AL SISTEMA.
-         * @param rut
-         * @param list
-         * @param pass
-         * @return persona
-         */
-        public Persona Ingresar(String rut, ListaPersonas list, String pass){
-            int i;
-            Persona type;
-
-            if(list.getPersonas() == null) return null;
-
-            for(i=0;i<list.getPersonas().size();i++){
-                
-                type=(Persona)list.getPersonas().get(i);
-                
-                if(rut.equals(type.getRut()) && pass.equals(type.getPass())){
-                    return type; //Se encontró Al usuario y la contraseña es correcta
-                }else{
-                    if(rut.equals(type.getRut()) && (!pass.equals(type.getPass()))){
-                        return null; //La contraseña es incorrecta
-                    }
-                }
-            }
-            return null;
+        
+        public void modiPersona(Persona p){
+        File f=new File("LibroPersona.xlsx");
+        ArrayList aP =personas.getPersonas();
+        for(int i=0;i<aP.size();i++){
+            Persona a = (Persona)aP.get(i);
+            if(a.getRut().equals(p.getRut())) aP.remove(i);
+        }
+        aP.add(p);
+        personas.setPersonas(aP);
+        personas.ActualizarExcel(personas, f);
         }
         
-        public Sede buscarSede(String s){
-        ListaSede ls= new ListaSede();
-        ls=(ListaSede)ls.cargarExcel();
-        ArrayList<Sede> as = ls.getSedes();
-        for(int i=0;i<as.size();i++){
-            Sede ss=(Sede)as.get(i);
-            if(ss.getComuna().equals(s)) return ss;
+        public void eliminarCert(){
+            listCert.eliminarCertS(this);
+        }        
+        public Sede(List cellTempList,ListaPersonas lp, ListCertEmitidos lc){
+            XSSFCell hssfCell = (XSSFCell) cellTempList.get(0);
+            String stringCellValue = hssfCell.toString();
+            region=stringCellValue;
+            hssfCell = (XSSFCell) cellTempList.get(1);
+            stringCellValue = hssfCell.toString();
+            nombreComuna=stringCellValue;
+            personas = lp.agruparPersonas(nombreComuna);
+            listCert=lc.agruparCertSede(nombreComuna);
         }
-        return null;
-    }
         
     }

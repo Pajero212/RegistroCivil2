@@ -5,9 +5,8 @@ public class RegistroCivil{
     private ListaCertSolicitados lcs;
     
     public RegistroCivil(){
-        ListaSede l=new ListaSede();
-        ListaCertSolicitados ls= new ListaCertSolicitados();
-        RegistroCivil register = new RegistroCivil((ListaSede)l.cargarExcel(),(ListaCertSolicitados)ls.cargarExcel());
+        ListaSede l=ListaSede.getInstance();
+        ListaCertSolicitados ls= ListaCertSolicitados.getInstance();
     }
     
     public RegistroCivil(ListaSede lista,ListaCertSolicitados l){

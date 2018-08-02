@@ -1,12 +1,10 @@
 package registrocivil;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
@@ -15,12 +13,23 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 public class ListaCertSolicitados implements excel{
     private ArrayList <Cert> list;
+    private static ListaCertSolicitados ls;
     
-    public ListaCertSolicitados (ArrayList certificados){
+    public static ListaCertSolicitados getInstance(){
+        if(ls==null){
+            File f=new File("LibroCert.xlsx");
+            List lista=excel.LeerExcel(f);
+            ls=(ListaCertSolicitados)ListaCertSolicitados.obtenerExcel(lista);
+        }
+        return ls;
+    }
+    
+    
+    private ListaCertSolicitados (ArrayList certificados){
         this.list=certificados;
     }
     
-    public ListaCertSolicitados (){
+    private ListaCertSolicitados (){
         ArrayList<Cert> certificados = new ArrayList<>(); 
         this.list=certificados;
     }
@@ -46,7 +55,50 @@ public class ListaCertSolicitados implements excel{
         return c1;
     }
     
-     @Override
+    public ArrayList nuevoCert(String cod,String rut, String rut2, String comuna){
+        Cert certi = new Cert(cod,rut,comuna,rut2);
+        list.add(certi);
+        return list;
+    }
+    
+    public ArrayList agruparDatos(ListaCertSolicitados ls){
+        ArrayList<Cert> central = ls.getListaCertSolicitados();
+        ArrayList retorno = new ArrayList<>();
+        int c1=0,c2=0,c3=0;
+        
+        for(int i=0;i<central.size();i++){
+            Cert c =(Cert)central.get(i);
+            switch (c.getCod()){
+                case "1":
+                    c1++;
+                    break;
+                case "2":
+                    c2++;
+                    break;
+                case "3":
+                    c3++;
+                    break;
+            }
+        }
+        retorno.add(c1);
+        retorno.add(c2);
+        retorno.add(c3);
+        return retorno;
+    }
+    
+    public ArrayList agruparTipo(String tipo){
+        ArrayList<Cert> cl = new ArrayList<>();
+        Cert cer;
+        int i;
+         for(i=0;i<list.size();i++){
+             cer = list.get(i);
+             if(cer.getCod().equals(tipo)){
+               cl.add(cer);
+           }
+         }
+         return cl;
+    }
+
     public void ActualizarExcel(Object O, File file) {
         int i,j;
         Cert cert;
@@ -90,110 +142,51 @@ public class ListaCertSolicitados implements excel{
                     wb.write(fsIP);
                 }
             }catch(FileNotFoundException ex){
-                
+                System.out.println("\nError: "+ex.getMessage());
             }
         }catch(IOException e){
-            
+            System.out.println("\nError: "+e.getMessage());
         }
     }
 
-    @Override
-    public Object LeerExcel(Object O, File filename) {
-        List cellData = new ArrayList();
-        try{
-            FileInputStream fileInputStream = new FileInputStream (filename);
-            XSSFWorkbook workbook = new XSSFWorkbook(fileInputStream);
-            
-            XSSFSheet hssfsheet = workbook.getSheetAt(0);
-            
-            Iterator rowIterator = hssfsheet.rowIterator();
-            
-            while(rowIterator.hasNext()){
-                XSSFRow hssfRow = (XSSFRow) rowIterator.next();
-                
-                Iterator iterator = hssfRow.cellIterator();
-                List cellTemp = new ArrayList();
-                
-                while(iterator.hasNext()){
-                    XSSFCell hssfCell = (XSSFCell) iterator.next();
-                    
-                    cellTemp.add(hssfCell);
-                }
-                
-                cellData.add(cellTemp);
-            }
-            
-        }catch(IOException e){
-              
-        }
-        return obtenerExcel(cellData,O);
-    }
-
-    @Override
-    public Object obtenerExcel(List cellDataList, Object O) {
-        int i,j;
-        ListaCertSolicitados l=(ListaCertSolicitados)O;
-        String sede=null,rut=null,cod=null,piv,rut2=null;
+    public static Object obtenerExcel(List cellDataList) {
+        int i;
+        ArrayList<Cert> ac = new ArrayList<>();
         Cert certificado;
-        ArrayList <Cert> c = new ArrayList <>();
-        boolean estado=false;
-        
         for (i=0;i<cellDataList.size();i++){
             List cellTempList = (List) cellDataList.get(i);
-
-            for(j=0;j<cellTempList.size();j++){
-                XSSFCell hssfCell = (XSSFCell) cellTempList.get(j);
-                
-                String stringCellValue = hssfCell.toString();
-                
-                switch(j){
-                    case 0:
-                        piv=stringCellValue;
-                        if(piv.equals("1")){
-                            cod=piv;
-                        }else{
-                            if(piv.equals("2")){
-                                cod=piv;
-                            }else{
-                                if(piv.equals("3")) cod=piv;
-                            }
-                        }
-                        break;
-                    case 1:
-                        sede=stringCellValue;
-                        break;
-                    case 2:
-                        rut=stringCellValue;
-                        break;
-                    case 3:
-                        if(stringCellValue.equals("A")){
-                            estado=true;
-                        }
-                        break;
-                    case 4:
-                        rut2=stringCellValue;
-                        break;
-                }
-            }
-            certificado=new Cert(cod,sede,rut,estado,rut2);
-            c.add(certificado);
-            
+            certificado=new Cert(cellTempList);
+            ac.add(certificado);
         }
-        l.setListaCertSolicitados(c);
+        ListaCertSolicitados l = new ListaCertSolicitados(ac);
         return l;
-    }
-
-    @Override
-    public Object cargarExcel() {
-        File f=new File("LibroCert.xlsx");
-        ArrayList<Cert> a = new ArrayList<>();
-        ListaCertSolicitados l=new ListaCertSolicitados(a);
-        return LeerExcel(l,f);
     }
     
     public void Actualizar(ListaCertSolicitados l){
         File f=new File("LibroCert.xlsx");
         ActualizarExcel(l,f);
     }
+    
+    public void modiLista(Cert c){
+        ListaCertSolicitados l=ListaCertSolicitados.getInstance();
+        ArrayList<Cert> lc=l.getListaCertSolicitados();
+        for(int i=0;i<lc.size();i++){
+            Cert piv = (Cert)lc.get(i);
+            if(piv.equals(c)) lc.remove(i);
+        }
+        lc.add(c);
+        l.setListaCertSolicitados(lc);
+        this.Actualizar(l);
+    }
+    
+    public void eliminar(Cert c){
+        for (int i=0;i<list.size();i++){
+            Cert piv = (Cert)list.get(i);
+            if(piv.equals(c)) list.remove(i);
+        }
+        File f=new File("LibroCert.xlsx");
+        ActualizarExcel(this,f);
+    }
+    
     
 }

@@ -1,12 +1,10 @@
 package registrocivil;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
@@ -15,11 +13,25 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 public class Regiones implements excel{
     
-    ArrayList<String> regions;
+    private ArrayList<String> regions;
+    private static Regiones rns;
     
-    public Regiones(){
+    public static Regiones getInstance(){
+        if(rns==null){
+            File f=new File("regiones.xlsx");
+            List lista=excel.LeerExcel(f);
+            rns=(Regiones)Regiones.obtenerExcel(lista);
+        }
+        return rns;
+    }
+    
+    private Regiones(){
         ArrayList<String> regiones = new ArrayList<>();
         this.regions=regiones;
+    }
+
+    private Regiones(ArrayList<String> regioness) {
+        regions=regioness;
     }
     
     public void setRegiones(ArrayList regiones){
@@ -30,7 +42,6 @@ public class Regiones implements excel{
         return regions;
     }
 
-    @Override
     public void ActualizarExcel(Object O, File file) {
         int i,j;
         ArrayList <String> regiones =(ArrayList)O;
@@ -61,42 +72,9 @@ public class Regiones implements excel{
         }
     }
 
-    @Override
-    public Object LeerExcel(Object O, File filename) {
-        List cellData = new ArrayList();
-        try{
-            FileInputStream fileInputStream = new FileInputStream (filename);
-            XSSFWorkbook workbook = new XSSFWorkbook(fileInputStream);
-            
-            XSSFSheet hssfsheet = workbook.getSheetAt(0);
-            
-            Iterator rowIterator = hssfsheet.rowIterator();
-            
-            while(rowIterator.hasNext()){
-                XSSFRow hssfRow = (XSSFRow) rowIterator.next();
-                
-                Iterator iterator = hssfRow.cellIterator();
-                List cellTemp = new ArrayList();
-                
-                while(iterator.hasNext()){
-                    XSSFCell hssfCell = (XSSFCell) iterator.next();
-                    
-                    cellTemp.add(hssfCell);
-                }
-                
-                cellData.add(cellTemp);
-            }
-            
-        }catch(IOException e){
-           
-        }
-        return obtenerExcel(cellData,O);
-    }
-
-    @Override
-    public Object obtenerExcel(List cellDataList, Object O) {
+    public static Object obtenerExcel(List cellDataList) {
         int i,j;
-        ArrayList<String> regiones=(ArrayList)O;
+        ArrayList<String> regioness=new ArrayList<>();
         String region=null;
         for (i=0;i<cellDataList.size();i++){
             List cellTempList = (List) cellDataList.get(i);
@@ -111,17 +89,10 @@ public class Regiones implements excel{
                         break;
                 }
             }
-            regiones.add(region);
+            regioness.add(region);
         }
+        Regiones regiones=new Regiones(regioness);
         return regiones;
-    }
-
-    @Override
-    public Object cargarExcel() {
-        ArrayList <String> s = new ArrayList<>();
-        File f=new File("regiones.xlsx");
-        LeerExcel(s,f);
-        return s;
     }
     
 }

@@ -1,5 +1,8 @@
 package registrocivil;
 
+import java.util.List;
+import org.apache.poi.xssf.usermodel.XSSFCell;
+
 public class Cert {
     private String cod;
     private String rut;
@@ -70,5 +73,28 @@ public class Cert {
     public String getRut2(){
         return rut2;
     }
+    
+    public Cert(List cellTempList){
+        aprobado=false;
+        XSSFCell hssfCell = (XSSFCell) cellTempList.get(0);
+        String stringCellValue = hssfCell.toString();
+        cod=stringCellValue;
+        hssfCell = (XSSFCell) cellTempList.get(1);
+        stringCellValue = hssfCell.toString();
+        rut=stringCellValue;
+        hssfCell = (XSSFCell) cellTempList.get(2);
+        stringCellValue = hssfCell.toString();
+        sede=stringCellValue;
+        hssfCell = (XSSFCell) cellTempList.get(3);
+        stringCellValue = hssfCell.toString();
+        if(stringCellValue.equals("A")){
+            aprobado=true;
+        }
+        hssfCell = (XSSFCell) cellTempList.get(4);
+        stringCellValue = hssfCell.toString();
+        rut2=stringCellValue;
+    }
+    
+    
     
 }

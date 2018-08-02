@@ -1,6 +1,9 @@
 package registrocivil;
 
+import intervisual.excepcionRegistro;
 import java.util.ArrayList;
+import java.util.List;
+import org.apache.poi.xssf.usermodel.XSSFCell;
 
 public abstract class Persona {
     private String rut;
@@ -49,6 +52,43 @@ public abstract class Persona {
         this.fechaDef=null;
         this.type=type;
         this.estado=estado;
+    }
+    
+    public Persona(List cellTempList){
+        XSSFCell hssfCell = (XSSFCell) cellTempList.get(0);
+        String stringCellValue = hssfCell.toString();
+        apellidoP=stringCellValue;
+        hssfCell = (XSSFCell) cellTempList.get(1);
+        stringCellValue = hssfCell.toString();
+        sexo=stringCellValue;
+        hssfCell = (XSSFCell) cellTempList.get(2);
+        stringCellValue = hssfCell.toString();
+        nombre=stringCellValue;
+        hssfCell = (XSSFCell) cellTempList.get(3);
+        stringCellValue = hssfCell.toString();
+        rut=stringCellValue;
+        hssfCell = (XSSFCell) cellTempList.get(4);
+        stringCellValue = hssfCell.toString();
+        pass=stringCellValue;
+        hssfCell = (XSSFCell) cellTempList.get(5);
+        stringCellValue = hssfCell.toString();
+        nacionalidad=stringCellValue;
+        hssfCell = (XSSFCell) cellTempList.get(6);
+        stringCellValue = hssfCell.toString();
+        apellidoM=stringCellValue;
+        hssfCell = (XSSFCell) cellTempList.get(7);
+        stringCellValue = hssfCell.toString();
+        comuna=stringCellValue;
+        hssfCell = (XSSFCell) cellTempList.get(8);
+        stringCellValue = hssfCell.toString();
+        estadocivil=stringCellValue;
+        fecha=new Fecha(cellTempList);
+        hssfCell = (XSSFCell) cellTempList.get(12);
+        stringCellValue = hssfCell.toString();
+        type=stringCellValue;
+        hssfCell = (XSSFCell) cellTempList.get(13);
+        stringCellValue = hssfCell.toString();
+        estado=this.definirEstado(stringCellValue);
     }
     
 public void setComuna(String comuna){
@@ -193,8 +233,7 @@ public void setCertificados(Certificado certificados){
     }
     
     public ListaCertSolicitados menuCertEmi(Persona p){
-        ListaCertSolicitados ls= new ListaCertSolicitados();
-        ls=(ListaCertSolicitados)ls.cargarExcel();
+        ListaCertSolicitados ls= ListaCertSolicitados.getInstance();
         ArrayList <Cert> certi = ls.agruparCertPersona(p.getRut());
         ArrayList <Cert> cert2 = new ArrayList <>();
         Cert certif;
@@ -209,21 +248,56 @@ public void setCertificados(Certificado certificados){
         return ls;
     }
     
-    public boolean checkPass(Persona p, String pass){
-        boolean b=false;
+    public boolean checkPass(Persona p, String pass) throws excepcionRegistro {
+        boolean b;
         if(pass.equals(p.getPass())){
             b=true;
             return b;
+        }else{
+            throw new excepcionRegistro("Los Campos de Password no coinciden");
         }
-        return b;
     }
     
+    /**
+     * Funcion encargada en verificar y cambiar contraseña de la persona,
+     * asi como tambien en el resgistro.
+     * @param p
+     * @param pass1
+     * @param pass2 
+     */
     public void Pass(Persona p,String pass1,String pass2){
-        if(p.checkPass(p, pass1)){
-           p.setPass(pass2);
+        try{
+            if(this.checkPass(p, pass1)){
+               pass=pass2;
+            }
+        }catch(excepcionRegistro e){
+            System.out.println("Error: "+e.getMessage());
         }
-        ListaPersonas lP = new ListaPersonas();
-        lP.modiPersona(p);
+        try{
+        ListaSede ls = ListaSede.getInstance();
+        Sede s = ls.selectSede(p.getComuna());
+        s.modiPersona(p);
+        }catch(NullPointerException e){
+            System.out.println("Error sentencia"+e.getMessage());
+        }
+    }
+    
+    public boolean esDivorciade(){
+        return estadocivil.equals("Divorciado");
+    }
+    
+    public boolean nacidoAhora(){
+        return fecha.nacidoAhora();
+    }
+    
+    public boolean muertoAhora(){
+        if(fechaDef == null) return false;
+        return fechaDef.murioAhora();
+    }
+    
+    public boolean murioMenor(){
+        if(fechaDef == null) return false;
+        return fechaDef.murioMenor(fecha);
     }
     
     public void buscarCert(Usuario persona, Sede sede){
@@ -237,6 +311,28 @@ public void setCertificados(Certificado certificados){
     public void menuCarnet(Persona p){
         p.generarCarnet(p, 0, null, null);
         System.out.println("Solicitud generada, la fecha para retirarlo se le notificara una vez listo.");
+    }
+    
+    public String conversionEstado(boolean b){
+        String s=("0");
+        if(b){
+            s=("1");
+        }
+        return s;
+    }
+    
+    public void eliminarCert(){
+        if(cert!=null){
+            cert.eliminarCertP(this);
+        }
+    }
+    
+    private boolean definirEstado(String s){
+        boolean b=false;
+        if(s.equals("1")){
+            b=true;
+        }
+        return b;
     }
     
 }

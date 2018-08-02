@@ -1,13 +1,14 @@
 package interfaz;
 
 import registrocivil.*;
-import intervisual.InterVisual;
 
 public class MenuCertMat extends javax.swing.JFrame {
     Persona p;
-    public MenuCertMat(Persona p) {
+    String estad;
+    public MenuCertMat(Persona p,String estado) {
         initComponents();
         this.p=p;
+        estad=estado;
     }
 
     @SuppressWarnings("unchecked")
@@ -113,8 +114,10 @@ public class MenuCertMat extends javax.swing.JFrame {
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         CertMatrimonio c=new CertMatrimonio();
         c.menuMat(p, texto.getText());
+        p.setEstadocivil(estad);
+        ListaPersonas ls = ListaPersonas.getInstance();
+        ls.actualizable(p);
         this.setVisible(false);
-        InterVisual.MenuInter(p);
     }//GEN-LAST:event_jButton1ActionPerformed
 
 

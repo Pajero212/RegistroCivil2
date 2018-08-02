@@ -1,11 +1,16 @@
 package registrocivil;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class Administrador extends Persona {
     
     public Administrador(String nombre, String rut, String apellidoP, String estadocivil, String apellidoM, String sexo, String nacionalidad, Certificado certificados, Carnet carnet, String pass, Fecha fecha, String comuna, ListCertEmitidos cert,Fecha fechaDef,String type, boolean estado) {
         super(nombre, rut, apellidoP, estadocivil, apellidoM, sexo, nacionalidad, certificados, carnet, pass, fecha, comuna, cert,fechaDef,type,estado);
+    }
+    
+    public Administrador(List cellTempList){
+        super(cellTempList);
     }
     
     public ArrayList agruparCertNA(ArrayList<Cert> certificados){
@@ -35,8 +40,7 @@ public class Administrador extends Persona {
     }
     
     public void menuCertSol(Persona p,Boolean b){
-        ListaCertSolicitados ls=new ListaCertSolicitados();
-        ls=(ListaCertSolicitados)ls.cargarExcel();
+        ListaCertSolicitados ls=ListaCertSolicitados.getInstance();
         ArrayList<Cert> certi=ls.getListaCertSolicitados();
         ArrayList<Cert> subida=new ArrayList<>();
         for(int i=0;i<certi.size();i++){

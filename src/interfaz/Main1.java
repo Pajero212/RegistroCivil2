@@ -6,38 +6,35 @@ import registrocivil.*;
 import intervisual.*;
 
 public class Main1 extends javax.swing.JFrame {
-    DefaultComboBoxModel modeloLista;
-    DefaultComboBoxModel modeloLista2;
-    ListaSede lS;
+    DefaultComboBoxModel modeloLista; //para regiones
+    DefaultComboBoxModel modeloLista2; //para sedes en la region
     
-    public Main1(ArrayList regiones,ListaSede ls) {
+    public Main1(ArrayList regiones) {
         initComponents();
         modeloLista=new DefaultComboBoxModel();
         modeloLista2=new DefaultComboBoxModel();
         int i;
-        for(i=0;i<regiones.size();i++){
+        for(i=0;i<regiones.size();i++){ //SE CARGAN LAS REGIONES
             modeloLista.addElement(regiones.get(i));
         }
         region.setModel(modeloLista);
-        this.lS=ls;
     }
     
-    public Main1(){
-        initComponents();
-    }
-    
+    /**
+     * Funcion encargada de, a partir de la region seleccionada,
+     * cargar las sedes encontradas en aquella region.
+     */
     public void cargarOficinas() {
-        ListaSede l=new ListaSede();
-        l=(ListaSede)l.cargarExcel();
-        ArrayList<Sede> todo=l.getSedes();
+        ListaSede l=ListaSede.getInstance();
         String office = (String)region.getSelectedItem();
-        ArrayList<Sede> oficinas=l.agruparOficinar(todo, office);
+        ArrayList<Sede> oficinas=l.agruparOficinar(office); //AGRUPA SEGUN LA REGION SELECCIONADA
         int i;
+        modeloLista2.removeAllElements();
         for(i=0;i<oficinas.size();i++){
             Sede s=(Sede)oficinas.get(i);
-            modeloLista2.addElement(s.getComuna());
+            modeloLista2.addElement(s.getComuna()); //SE MUESTRA EN LA LISTA POR INTERFAZ
         }
-        oficina.setModel(modeloLista2);
+        oficina.setModel(modeloLista2); //SE CARGAN SEDES
     }
 
     @SuppressWarnings("unchecked")
@@ -50,7 +47,6 @@ public class Main1 extends javax.swing.JFrame {
         jPanel1 = new javax.swing.JPanel();
         jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
-        jButton3 = new javax.swing.JButton();
         jPanel4 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         region = new javax.swing.JComboBox<>();
@@ -77,8 +73,11 @@ public class Main1 extends javax.swing.JFrame {
         });
 
         jButton2.setText("Ver Estadisticas");
-
-        jButton3.setText("Ver Proyecciones");
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
 
         jPanel4.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
 
@@ -150,7 +149,7 @@ public class Main1 extends javax.swing.JFrame {
                 .addComponent(oficina, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(49, 49, 49)
                 .addComponent(ingresar)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(63, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
@@ -160,8 +159,7 @@ public class Main1 extends javax.swing.JFrame {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addGap(0, 82, Short.MAX_VALUE)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jButton3, javax.swing.GroupLayout.DEFAULT_SIZE, 133, Short.MAX_VALUE)
+                    .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, 133, Short.MAX_VALUE)
                     .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addGap(80, 80, 80)
                 .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -170,13 +168,11 @@ public class Main1 extends javax.swing.JFrame {
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(16, 16, 16)
+                .addGap(40, 40, 40)
                 .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(13, 13, 13)
+                .addGap(50, 50, 50)
                 .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(33, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
@@ -244,7 +240,7 @@ public class Main1 extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void regionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_regionActionPerformed
-        cargarOficinas();
+        cargarOficinas(); //AL SELECCIONAR UNA REGION EN LA LISTA, SE HACE LA LLAMADA A ESTA FUNCION
     }//GEN-LAST:event_regionActionPerformed
 
     private void oficinaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_oficinaActionPerformed
@@ -258,14 +254,17 @@ public class Main1 extends javax.swing.JFrame {
     }//GEN-LAST:event_ingresarActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        
+        InterVisual.menuDatos();
     }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        InterVisual.menuEstad();
+    }//GEN-LAST:event_jButton2ActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton ingresar;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;

@@ -1,5 +1,6 @@
 package registrocivil;
 
+import intervisual.excepcionRegistro;
 import java.io.File;
 import java.util.ArrayList;
 
@@ -8,8 +9,8 @@ public class CertDefunsion {
     private String nombreH, rutH, apellidoPH, apellidoMH; //datos del fallecido
     private Fecha fecha;
     
-    public CertDefunsion(int cod,String nombreH,String rutH,String apellidoPH,String apellidoMH,Fecha fecha){
-        this.cod=cod;
+    public CertDefunsion(String nombreH,String rutH,String apellidoPH,String apellidoMH,Fecha fecha){
+        this.cod=3;
         this.nombreH=nombreH;
         this.apellidoPH=apellidoPH;
         this.apellidoMH=apellidoMH;
@@ -77,20 +78,25 @@ public class CertDefunsion {
     }
 
     public void menuDef(Persona p,String r){
+        ListaPersonas lp = ListaPersonas.getInstance();
+        try{
+        Persona p2 = lp.buscarPersona(r);
         String c=("3");
         Cert certi = new Cert(c,p.getRut(),p.getComuna(),r);
-        ListaCertSolicitados ls=new ListaCertSolicitados();
-        ls=(ListaCertSolicitados)ls.cargarExcel();
+        ListaCertSolicitados ls=ListaCertSolicitados.getInstance();
         ArrayList<Cert> as=ls.getListaCertSolicitados();
         as.add(certi);
         ls.setListaCertSolicitados(as);
         ls.Actualizar(ls);
+        }catch(excepcionRegistro e){
+            System.out.println("Error: "+e.getMessage());
+        }
     }
     
     public void aprobadoCertDef(Persona p, String sede){
         File file=new File("LibroPersona.xlsx");
-        Sede s = new Sede(null,null,null,null);
-        s=s.buscarSede(sede);
+        ListaSede ls= ListaSede.getInstance();
+        Sede s = ls.selectSede(sede);
         ListaPersonas lp=s.getPersonas();
         ArrayList<Persona> ap=lp.getPersonas();
         for (int i=0;i<ap.size();i++){
